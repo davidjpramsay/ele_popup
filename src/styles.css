@@ -98,26 +98,6 @@ p {
   min-height: 520px;
 }
 
-.hint {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  min-width: 118px;
-  padding: 9px 13px;
-  border: 1px solid rgba(35, 27, 24, 0.1);
-  border-radius: 999px;
-  color: #4d413b;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 10px 30px rgba(64, 45, 30, 0.14);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 180ms ease;
-}
-
 button {
   border: 0;
   border-radius: 8px;

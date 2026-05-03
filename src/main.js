@@ -5,7 +5,6 @@ import drawingUrl from '../Document_20260503_0001.jpg?url';
 
 const canvas = document.querySelector('#foldCanvas');
 const toggleButton = document.querySelector('#toggleButton');
-const hint = document.querySelector('.hint');
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const renderer = new THREE.WebGLRenderer({
@@ -163,7 +162,6 @@ function updateFold(rawProgress) {
   camera.lookAt(0, THREE.MathUtils.lerp(0.5, 0.02, eased), 0);
 
   state.progress = progress;
-  hint.style.opacity = progress > 0.08 && progress < 0.88 ? 1 : 0;
   toggleButton.lastChild.textContent = progress >= 0.98 ? ' Fold' : ' Surprise';
 }
 
@@ -173,7 +171,6 @@ function playTo(target) {
   if (prefersReducedMotion) {
     updateFold(target);
     isOpen = state.progress > 0.5;
-    hint.style.opacity = 0;
     return;
   }
 
@@ -184,7 +181,6 @@ function playTo(target) {
     onUpdate: () => updateFold(state.progress),
     onComplete: () => {
       isOpen = state.progress > 0.5;
-      hint.style.opacity = 0;
     },
   });
 }
