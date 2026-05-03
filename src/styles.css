@@ -46,7 +46,7 @@ input {
 .stage-shell {
   width: min(1120px, 100%);
   display: grid;
-  grid-template-rows: auto minmax(520px, 72vh) auto;
+  grid-template-rows: auto minmax(520px, 72vh);
   gap: 18px;
   padding: clamp(14px, 2vw, 22px);
   border: 1px solid rgba(68, 52, 40, 0.16);
@@ -56,8 +56,7 @@ input {
   backdrop-filter: blur(18px);
 }
 
-.stage-header,
-.controls {
+.stage-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,10 +118,6 @@ p {
   transition: opacity 180ms ease;
 }
 
-.controls {
-  min-height: 48px;
-}
-
 button {
   border: 0;
   border-radius: 8px;
@@ -152,6 +147,7 @@ input:focus-visible {
   box-shadow: 0 14px 30px rgba(10, 159, 193, 0.28);
   font-size: 0.95rem;
   font-weight: 800;
+  flex: 0 0 auto;
 }
 
 #toggleButton:hover {
@@ -165,49 +161,6 @@ input:focus-visible {
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
   border-left: 9px solid currentColor;
-}
-
-.icon-button {
-  width: 44px;
-  height: 44px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-  color: var(--ink);
-  background: #fff;
-  border: 1px solid rgba(35, 27, 24, 0.13);
-}
-
-.icon-button:hover {
-  transform: translateY(-1px);
-  background: #fff8fa;
-}
-
-.icon-button svg {
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.scrub-control {
-  flex: 1;
-  max-width: 620px;
-  display: grid;
-  grid-template-columns: auto minmax(120px, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  color: #5d514a;
-  font-size: 0.86rem;
-  font-weight: 800;
-}
-
-input[type="range"] {
-  width: 100%;
-  accent-color: var(--pink);
 }
 
 .load-error .canvas-wrap::after {
@@ -229,27 +182,18 @@ input[type="range"] {
 
   .stage-shell {
     min-height: calc(100vh - 20px);
-    grid-template-rows: auto minmax(430px, 1fr) auto;
+    grid-template-rows: auto minmax(430px, 1fr);
     gap: 12px;
     padding: 10px;
   }
 
   .stage-header {
-    align-items: flex-start;
-  }
-
-  .controls {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
   }
 
   #toggleButton {
-    width: 100%;
-  }
-
-  .scrub-control {
-    max-width: none;
-    width: 100%;
+    min-width: 116px;
+    padding-inline: 14px;
   }
 
   #foldCanvas {

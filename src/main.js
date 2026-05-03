@@ -5,10 +5,8 @@ import drawingUrl from '../Document_20260503_0001.jpg?url';
 
 const canvas = document.querySelector('#foldCanvas');
 const toggleButton = document.querySelector('#toggleButton');
-const replayButton = document.querySelector('#replayButton');
-const range = document.querySelector('#progressRange');
 const hint = document.querySelector('.hint');
-const params = new URLSearchParams(window.location.search);
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -165,13 +163,20 @@ function updateFold(rawProgress) {
   camera.lookAt(0, THREE.MathUtils.lerp(0.5, 0.02, eased), 0);
 
   state.progress = progress;
-  range.value = Math.round(progress * 100);
   hint.style.opacity = progress > 0.08 && progress < 0.88 ? 1 : 0;
-  toggleButton.lastChild.textContent = progress >= 0.98 ? ' Fold' : ' Unfold';
+  toggleButton.lastChild.textContent = progress >= 0.98 ? ' Fold' : ' Surprise';
 }
 
 function playTo(target) {
   animation?.kill();
+
+  if (prefersReducedMotion) {
+    updateFold(target);
+    isOpen = state.progress > 0.5;
+    hint.style.opacity = 0;
+    return;
+  }
+
   animation = gsap.to(state, {
     progress: target,
     duration: target > state.progress ? 2.45 : 1.6,
@@ -209,11 +214,7 @@ loader.load(
     resize();
     render();
     window.foldExperience = { playTo, updateFold };
-    if (params.get('autoplay') === '0') {
-      updateFold(Number(params.get('progress') ?? 0));
-    } else {
-      requestAnimationFrame(() => playTo(1));
-    }
+    updateFold(0);
   },
   undefined,
   () => {
@@ -226,20 +227,4 @@ toggleButton.addEventListener('click', () => {
   playTo(isOpen ? 0 : 1);
 });
 
-replayButton.addEventListener('click', () => {
-  updateFold(0);
-  isOpen = false;
-  playTo(1);
-});
-
-range.addEventListener('input', (event) => {
-  animation?.kill();
-  updateFold(Number(event.target.value) / 100);
-  isOpen = state.progress > 0.5;
-});
-
 window.addEventListener('resize', resize);
-
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  updateFold(1);
-}
