@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ele's Bubble Tea Surprise</title>
+  </head>
+  <body>
+    <main class="experience" aria-label="Animated bubble tea drawing unfold">
+      <section class="stage-shell">
+        <div class="stage-header">
+          <div>
+            <h1>Ele's Bubble Tea Surprise</h1>
+            <p>A folded paper drawing that opens into a bubble tea splash.</p>
+          </div>
+          <button class="icon-button" id="replayButton" type="button" aria-label="Replay unfold animation">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 12a8 8 0 1 0 2.34-5.66" />
+              <path d="M4 4v6h6" />
+            </svg>
+          </button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="foldCanvas"></canvas>
+          <div class="hint" aria-hidden="true">Unfolding...</div>
+        </div>
+        <div class="controls">
+          <button id="toggleButton" type="button">
+            <span class="play-icon" aria-hidden="true"></span>
+            Unfold
+          </button>
+          <label class="scrub-control" for="progressRange">
+            <span>Fold</span>
+            <input id="progressRange" type="range" min="0" max="100" value="0" />
+            <span>Open</span>
+          </label>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
