@@ -6,17 +6,23 @@
     <title>Ele's Bubble Tea Surprise</title>
   </head>
   <body>
-    <main class="experience" aria-label="Animated bubble tea drawing unfold">
+    <main class="experience" aria-label="Animated folded drawing unfold">
       <section class="stage-shell">
         <div class="stage-header">
-          <div>
-            <h1>Ele's Bubble Tea Surprise</h1>
-            <p>A folded paper drawing that opens into a bubble tea splash.</p>
+          <div class="title-copy">
+            <h1 id="pageTitle">Ele's Bubble Tea Surprise</h1>
+            <p id="pageDescription">A folded paper drawing that opens into a bubble tea splash.</p>
           </div>
-          <button id="toggleButton" type="button">
-            <span class="play-icon" aria-hidden="true"></span>
-            Surprise
-          </button>
+          <div class="header-actions">
+            <label class="drawing-picker" for="drawingSelect">
+              <span>Drawing</span>
+              <select id="drawingSelect" aria-label="Choose drawing"></select>
+            </label>
+            <button id="toggleButton" type="button">
+              <span class="play-icon" aria-hidden="true"></span>
+              Surprise
+            </button>
+          </div>
         </div>
         <div class="canvas-wrap">
           <canvas id="foldCanvas"></canvas>

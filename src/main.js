@@ -1,10 +1,15 @@
 import './styles.css';
 import { gsap } from 'gsap';
 import * as THREE from 'three';
-import drawingUrl from '../Document_20260503_0001.jpg?url';
+import bubbleTeaUrl from '../Document_20260503_0001.jpg?url';
+import popcornUrl from '../Document_20260614_0001.png?url';
 
 const canvas = document.querySelector('#foldCanvas');
+const pageTitle = document.querySelector('#pageTitle');
+const pageDescription = document.querySelector('#pageDescription');
+const drawingSelect = document.querySelector('#drawingSelect');
 const toggleButton = document.querySelector('#toggleButton');
+const params = new URLSearchParams(window.location.search);
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const renderer = new THREE.WebGLRenderer({
@@ -43,18 +48,43 @@ scene.add(fillLight);
 
 const loader = new THREE.TextureLoader();
 
+const drawings = [
+  {
+    id: 'bubble-tea',
+    label: 'Bubble tea',
+    title: "Ele's Bubble Tea Surprise",
+    description: 'A folded paper drawing that opens into a bubble tea splash.',
+    url: bubbleTeaUrl,
+    imageWidth: 2494,
+    imageHeight: 3524,
+    foldLines: [0, 881, 1762, 2643, 3524],
+    fitClosedWidth: false,
+  },
+  {
+    id: 'popcorn',
+    label: 'Popcorn',
+    title: "Ele's Popcorn Surprise",
+    description: 'A folded paper drawing that opens into a popcorn surprise.',
+    url: popcornUrl,
+    imageWidth: 2490,
+    imageHeight: 3524,
+    foldLines: [0, 881, 1762, 2643, 3524],
+    fitClosedWidth: true,
+    closedFitPadding: 0.74,
+  },
+];
+
 const state = {
   progress: 0,
-  imageWidth: 2494,
-  imageHeight: 3524,
+  drawing: drawings[0],
   paperHeight: 3.82,
   get paperWidth() {
-    return this.paperHeight * (this.imageWidth / this.imageHeight);
+    return this.paperHeight * (this.drawing.imageWidth / this.drawing.imageHeight);
   },
 };
 
-const foldLines = [0, 881, 1762, 2643, 3524];
 const panels = [];
+const textureCache = new Map();
 let animation;
 let isOpen = false;
 
@@ -64,8 +94,8 @@ function makePanelMaterial(baseTexture, y0, y1) {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = THREE.ClampToEdgeWrapping;
   texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.repeat.set(1, (y1 - y0) / state.imageHeight);
-  texture.offset.set(0, 1 - y1 / state.imageHeight);
+  texture.repeat.set(1, (y1 - y0) / state.drawing.imageHeight);
+  texture.offset.set(0, 1 - y1 / state.drawing.imageHeight);
 
   return new THREE.MeshStandardMaterial({
     map: texture,
@@ -91,13 +121,15 @@ function addFoldCrease(width, panelHeight, panelIndex) {
 }
 
 function buildPaper(texture) {
+  clearPaper();
+
   const paperWidth = state.paperWidth;
-  const panelCount = foldLines.length - 1;
+  const panelCount = state.drawing.foldLines.length - 1;
 
   for (let index = 0; index < panelCount; index += 1) {
-    const y0 = foldLines[index];
-    const y1 = foldLines[index + 1];
-    const panelHeight = ((y1 - y0) / state.imageHeight) * state.paperHeight;
+    const y0 = state.drawing.foldLines[index];
+    const y1 = state.drawing.foldLines[index + 1];
+    const panelHeight = ((y1 - y0) / state.drawing.imageHeight) * state.paperHeight;
     const geometry = new THREE.PlaneGeometry(paperWidth, panelHeight, 1, 1);
     const material = makePanelMaterial(texture, y0, y1);
     const mesh = new THREE.Mesh(geometry, material);
@@ -119,6 +151,21 @@ function buildPaper(texture) {
   }
 
   updateFold(0);
+}
+
+function clearPaper() {
+  while (panels.length) {
+    const panel = panels.pop();
+    panel.traverse((object) => {
+      if (!object.isMesh) return;
+      object.geometry?.dispose();
+      if (object.material) {
+        object.material.map?.dispose();
+        object.material.dispose();
+      }
+    });
+    paperGroup.remove(panel);
+  }
 }
 
 function easeFold(progress) {
@@ -146,10 +193,15 @@ function updateFold(rawProgress) {
   const closedZoom = 0.82;
   const openZoom = camera.aspect < 0.72 ? 0.98 : 1.03;
   const tanHalfFov = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const closedFitWidthZ =
+    (state.paperWidth * closedZoom) /
+    (2 * tanHalfFov * camera.aspect) *
+    (state.drawing.closedFitPadding ?? 1.04);
+  const closedCameraZ = state.drawing.fitClosedWidth ? Math.max(3.65, closedFitWidthZ) : 3.65;
   const fitHeightZ = (state.paperHeight * openZoom) / (2 * tanHalfFov) * 1.03;
   const fitWidthZ = (state.paperWidth * openZoom) / (2 * tanHalfFov * camera.aspect) * 1.03;
   const openCameraZ = Math.max(7.25, fitHeightZ, fitWidthZ);
-  const cameraZ = THREE.MathUtils.lerp(3.65, openCameraZ, eased);
+  const cameraZ = THREE.MathUtils.lerp(closedCameraZ, openCameraZ, eased);
   const cameraY = THREE.MathUtils.lerp(0.45, 0.03, eased);
   const groupX = THREE.MathUtils.lerp(-0.02, 0, eased);
   const groupY = THREE.MathUtils.lerp(-0.28, 0.03, eased);
@@ -185,6 +237,41 @@ function playTo(target) {
   });
 }
 
+function renderSelectedDrawing() {
+  const drawing = drawings.find((item) => item.id === drawingSelect.value) ?? drawings[0];
+  animation?.kill();
+  state.drawing = drawing;
+  state.progress = 0;
+  isOpen = false;
+  pageTitle.textContent = drawing.title;
+  pageDescription.textContent = drawing.description;
+  document.title = drawing.title;
+  toggleButton.lastChild.textContent = ' Surprise';
+
+  const cachedTexture = textureCache.get(drawing.id);
+  if (cachedTexture) {
+    buildPaper(cachedTexture);
+    resize();
+    return;
+  }
+
+  loader.load(
+    drawing.url,
+    (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      textureCache.set(drawing.id, texture);
+      if (state.drawing.id !== drawing.id) return;
+      buildPaper(texture);
+      resize();
+    },
+    undefined,
+    () => {
+      document.body.classList.add('load-error');
+    }
+  );
+}
+
 function resize() {
   const rect = canvas.parentElement.getBoundingClientRect();
   const width = Math.max(320, Math.floor(rect.width));
@@ -193,6 +280,7 @@ function resize() {
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
+  updateFold(state.progress);
   renderer.render(scene, camera);
 }
 
@@ -201,26 +289,34 @@ function render() {
   requestAnimationFrame(render);
 }
 
-loader.load(
-  drawingUrl,
-  (texture) => {
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    buildPaper(texture);
-    resize();
-    render();
-    window.foldExperience = { playTo, updateFold };
-    updateFold(0);
-  },
-  undefined,
-  () => {
-    document.body.classList.add('load-error');
-  }
-);
+drawings.forEach((drawing) => {
+  const option = document.createElement('option');
+  option.value = drawing.id;
+  option.textContent = drawing.label;
+  drawingSelect.append(option);
+});
+drawingSelect.value = drawings.some((drawing) => drawing.id === params.get('drawing'))
+  ? params.get('drawing')
+  : drawings[0].id;
+
+render();
+window.foldExperience = { playTo, updateFold };
+renderSelectedDrawing();
 
 toggleButton.addEventListener('click', () => {
   isOpen = state.progress > 0.5;
   playTo(isOpen ? 0 : 1);
+});
+
+drawingSelect.addEventListener('change', () => {
+  const nextUrl = new URL(window.location.href);
+  if (drawingSelect.value === drawings[0].id) {
+    nextUrl.searchParams.delete('drawing');
+  } else {
+    nextUrl.searchParams.set('drawing', drawingSelect.value);
+  }
+  window.history.replaceState({}, '', nextUrl);
+  renderSelectedDrawing();
 });
 
 window.addEventListener('resize', resize);
