@@ -1,6 +1,6 @@
-# Ele's Bubble Tea Surprise
+# ele_popup
 
-An interactive Three.js + GSAP webpage that unfolds Ele's bubble tea drawing from a folded paper state into the full splash drawing.
+An interactive Three.js + GSAP webpage that unfolds Ele's folded paper drawings into their full surprise drawings.
 
 ## Local Development
 
