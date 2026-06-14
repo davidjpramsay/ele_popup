@@ -68,7 +68,7 @@ const drawings = [
     url: popcornUrl,
     imageWidth: 2490,
     imageHeight: 3524,
-    foldLines: [0, 881, 1762, 2643, 3524],
+    foldLines: [0, 881, 1762, 2610, 3524],
     fitClosedWidth: true,
     closedFitPadding: 0.74,
   },
